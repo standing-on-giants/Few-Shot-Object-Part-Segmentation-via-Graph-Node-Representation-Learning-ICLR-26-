@@ -14,8 +14,8 @@ from evaluator.evaluator import SimplePartSegEvaluator
 # Configs (match train.py)
 # ----------------------
 TEST_DATA_DIR   = "test_processed_data"
-OUTPUT_DIR      = "test_outputs1"
-MODEL_DIR       = "saved_models1"
+OUTPUT_DIR      = "OUTPUT_model_mp_128_mlp_0_noAdjLearning_BS32_epoch_500"
+MODEL_DIR       = "model_mp_128_mlp_0_noAdjLearning_BS32_epoch_500"
 MODEL_FILE      = os.path.join(MODEL_DIR, "best_model.pth")
 BATCH_SIZE      = 8
 DEVICE          = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -25,9 +25,9 @@ NUM_CLUSTERS    = 2
 MP_ACT          = 'ELU'
 MLP_ACT         = 'Identity'
 IN_CHANNELS = 1024
-NUM_CLUSTERS = [2, 2]
-MP_UNITS = [[512,256, 128],[128,64]] # a list
-MLP_UNITS = [[64,32],[32,16]]
+NUM_CLUSTERS = 2
+MP_UNITS = [128] # a list
+MLP_UNITS = []
 
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
