@@ -16,11 +16,11 @@ EPOCHS = 500
 LEARNING_RATE = 1e-2
 #LEARNING_RATE = 5e-4
 CHECKPOINT_FREQ = 100
-BATCH_SIZE = 8
+BATCH_SIZE = 32
 NUM_CLUSTERS = 2 # used in one MP layer
 #NUM_CLUSTERS = [2, 2]
 #NUM_CLUSTERS = [2]
-MP_UNITS = [128] # used in one MP and pool first time it wa sjust [64]
+MP_UNITS = [64] # used in one MP and pool first time it wa sjust [64]
 #MP_UNITS = [[512,256, 128]] # a list
 #MP_UNITS = [[512,256, 128],[128,64]] # a list( for 2 times)
 
@@ -32,7 +32,7 @@ MP_ACT = 'ELU'
 #MLP_ACT = 'Identity'
 MLP_ACT = 'ReLU'
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-MODEL_DIR = "saved_models_mp_128_mlp_act_relu"
+MODEL_DIR = "model_mp_64_mlp_0_noAdjLearning_BS32_epoch_500"
 os.makedirs(MODEL_DIR, exist_ok=True)
 
 

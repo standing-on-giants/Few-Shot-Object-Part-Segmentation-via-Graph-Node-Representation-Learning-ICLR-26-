@@ -23,7 +23,7 @@ NUM_CLUSTERS    = 2
 # MP_UNITS        = [64]
 # MLP_UNITS       = []
 MP_ACT          = 'ELU'
-MLP_ACT         = 'Identity'
+MLP_ACT         = 'ReLU'
 IN_CHANNELS = 1024
 NUM_CLUSTERS = 2
 MP_UNITS = [128] # a list
@@ -66,7 +66,8 @@ with torch.no_grad():
     for batch in tqdm(test_loader, desc="Testing"):
         batch = batch.to(DEVICE)
         # Forward pass
-        out, mc_loss, o_loss = model(batch.x, batch.x_part, batch.edge_index, batch.edge_weight, batch.batch, batch.batch_part)
+        #out, mc_loss, o_loss = model(batch.x, batch.x_part, batch.edge_index, batch.edge_weight, batch.batch, batch.batch_part)
+        out, mc_loss, o_loss = model(batch.x, batch.edge_index, batch.edge_weight, batch.batch)
         preds = out.argmax(dim=1).cpu().numpy()
         y_gt   = batch.y.cpu().numpy()
 
