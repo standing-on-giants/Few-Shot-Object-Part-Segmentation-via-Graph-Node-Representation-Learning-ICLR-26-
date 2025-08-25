@@ -77,7 +77,8 @@ class Net(torch.nn.Module):
         adj = utils.to_dense_adj(edge_index, edge_attr=edge_weight)
         _, _, mc_loss, o_loss = dense_mincut_pool(x, adj, s)
         
-        return torch.softmax(s, dim=-1), mc_loss, o_loss
+        #return torch.softmax(s, dim=-1), mc_loss, o_loss
+        return s, mc_loss, o_loss
 
 
 

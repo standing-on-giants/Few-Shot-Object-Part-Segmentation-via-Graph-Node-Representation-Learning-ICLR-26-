@@ -20,11 +20,11 @@ BATCH_SIZE = 32
 NUM_CLUSTERS = 2 # used in one MP layer
 #NUM_CLUSTERS = [2, 2]
 #NUM_CLUSTERS = [2]
-MP_UNITS = [64] # used in one MP and pool first time it wa sjust [64]
+MP_UNITS = [1024] # used in one MP and pool first time it wa sjust [64]
 #MP_UNITS = [[512,256, 128]] # a list
 #MP_UNITS = [[512,256, 128],[128,64]] # a list( for 2 times)
 
-MLP_UNITS = [] #so single MP, first time it was []
+MLP_UNITS = [512] #so single MP, first time it was []
 #MLP_UNITS = [[64,32]]
 #MLP_UNITS = [[64,32],[32,16]] # for two times
 
@@ -32,7 +32,7 @@ MP_ACT = 'ELU'
 #MLP_ACT = 'Identity'
 MLP_ACT = 'ReLU'
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-MODEL_DIR = "model_mp_64_mlp_0_noAdjLearning_BS32_epoch_500"
+MODEL_DIR = "model_mp_1024_mlp_0_noAdjLearning_BS32_epoch_500_LOGIT"
 os.makedirs(MODEL_DIR, exist_ok=True)
 
 
@@ -76,6 +76,8 @@ criterion = CrossEntropyLoss()
 # ----------------------
 # Training Loop
 # ----------------------
+best_loss = float("inf")
+best_model_weights = None
 #alpha = 0.5  
 for epoch in range(1, EPOCHS + 1):
     model.train()
@@ -128,9 +130,15 @@ for epoch in range(1, EPOCHS + 1):
         torch.save(model.state_dict(), ckpt_path)
         print(f"Saved checkpoint: {ckpt_path}")
 
+    # Save best model
+    if avg_loss < best_loss:
+        best_loss = avg_loss
+        best_model_weights = model.state_dict()
+        print(f"New best model found at epoch {epoch} with loss {best_loss:.4f}")
+
 # ----------------------
 # Final Save
 # ----------------------
 final_path = os.path.join(MODEL_DIR, "best_model.pth")
-torch.save(model.state_dict(), final_path)
-print(f"\nTraining complete. Final model saved to: {final_path}")
+torch.save(best_model_weights, final_path)
+print(f"\nTraining completed. Best model saved to: {final_path}")
