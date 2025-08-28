@@ -3,7 +3,7 @@ import torch
 from torch.nn import CrossEntropyLoss
 from torch.utils.data import DataLoader
 from torch_geometric.loader import DataLoader as GeoDataLoader
-from model import Net, DenseMinCutNet  # your model with forward(x, edge_index, edge_weight, batch)
+from model import Net, Net_second, DenseMinCutNet  # your model with forward(x, edge_index, edge_weight, batch)
 from graph_dataset import GraphPartDataset  # assume you saved graphs and use torch.load()
 from tqdm import tqdm
 import torch.nn.functional as F
@@ -13,18 +13,18 @@ import torch.nn.functional as F
 # ----------------------
 EPOCHS = 500
 #LEARNING_RATE = 1e-3
-LEARNING_RATE = 1e-2
-#LEARNING_RATE = 5e-4
+#LEARNING_RATE = 1e-2
+LEARNING_RATE = 5e-4
 CHECKPOINT_FREQ = 100
 BATCH_SIZE = 32
 NUM_CLUSTERS = 2 # used in one MP layer
 #NUM_CLUSTERS = [2, 2]
 #NUM_CLUSTERS = [2]
-MP_UNITS = [1024, 1024] # used in one MP and pool first time it wa sjust [64]
+MP_UNITS = [[1024, 1024], [1024, 1024]] # used in one MP and pool first time it wa sjust [64]
 #MP_UNITS = [[512,256, 128]] # a list
 #MP_UNITS = [[512,256, 128],[128,64]] # a list( for 2 times)
 
-MLP_UNITS = [512] #so single MP, first time it was []
+MLP_UNITS = [[512, 512], [512, 512]] #so single MP, first time it was []
 #MLP_UNITS = [[64,32]]
 #MLP_UNITS = [[64,32],[32,16]] # for two times
 
@@ -32,7 +32,7 @@ MP_ACT = 'ELU'
 #MLP_ACT = 'Identity'
 MLP_ACT = 'ReLU'
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-MODEL_DIR = "model_mp_1024_1024_mlp_512_noAdjLearning_BS32_epoch_500"
+MODEL_DIR = "model_mp_[[1024, 1024], [1024, 1024]]_mlp_[[512, 512], [512, 512]]_AdjLearning_BS32_epoch_500"
 os.makedirs(MODEL_DIR, exist_ok=True)
 
 
@@ -43,7 +43,7 @@ loader = GeoDataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True)
 # ----------------------
 # Model & Optimizer
 # ----------------------
-model = Net(
+model = Net_second(
     mp_units=MP_UNITS,
     mp_act=MP_ACT,
     in_channels=1024,
@@ -67,8 +67,8 @@ model = Net(
 #optimizer = torch.optim.Adam(model.parameters(), lr=5e-4, weight_decay=1e-4)
 
 
-#optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE, weight_decay=1e-4)
-optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
+optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE, weight_decay=1e-4)
+#optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
 criterion = CrossEntropyLoss()
 
 #from torchviz import make_dot
@@ -90,9 +90,9 @@ for epoch in range(1, EPOCHS + 1):
         batch = batch.to(DEVICE)
         optimizer.zero_grad()
         
-        out, mc_loss, o_loss = model(batch.x, batch.edge_index, batch.edge_weight, batch.batch)
+        #out, mc_loss, o_loss = model(batch.x, batch.edge_index, batch.edge_weight, batch.batch)
         # below code is not reqiired
-        #out, mc_loss, o_loss = model(batch.x, batch.x_part, batch.edge_index, batch.edge_weight, batch.batch, batch.batch_part)
+        out, mc_loss, o_loss = model(batch.x, batch.x_part, batch.edge_index, batch.edge_weight, batch.batch, batch.batch_part)
         #make_dot(out, params=dict(model.named_parameters())).render("graph0", format="png")
         #print(a)
         

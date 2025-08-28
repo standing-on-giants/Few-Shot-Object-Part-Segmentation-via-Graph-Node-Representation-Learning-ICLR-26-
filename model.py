@@ -212,7 +212,8 @@ class Net_second(nn.Module):
 
         #print("Total_losse:\t", mc_loss_total, o_loss_total)
 
-        return torch.softmax(s, dim=-1), mc_loss_total, o_loss_total
+        #return torch.softmax(s, dim=-1), mc_loss_total, o_loss_total
+        return s, mc_loss_total, o_loss_total
 
 
 #below i modified code by me but stage is yet to be added
