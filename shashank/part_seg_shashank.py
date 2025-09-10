@@ -615,6 +615,10 @@ def create_dino_feature_for_added_labels(scale_dict1):
     return return_dict
 
 def get_features_and_affinity_matrix(support_dict, query_dict, support_part_mask, query_full_mask, query_part_mask, airplane_name, out_path=None, **kwargs):
+    #GIVEN SUPPORT AND QUERY IMAGES/MASKS, ALONG WITH SUPERPIXELS AND THEIR LABELS, THIS FUNCTION RETURNS AN AFFINITY MATRIX REPRESENTING SIMILARITY BTW SUPERPIXEL FEATURES
+
+
+
     if out_path is not None:
         #out_path_real = out_path + f"/{airplane_name}_real_pred_parts.jpg"
         out_path_real = out_path + "/{}_real_pred_parts.jpg".format(airplane_name)
@@ -634,8 +638,8 @@ def get_features_and_affinity_matrix(support_dict, query_dict, support_part_mask
 
         # #latest code implementation
         # inner_superpixel, bound_superpixel = inner_and_outer_superpixel_mask(
-        #     correct_pose_output['superpixel_labels'],
-        #     np.asarray(resize_image(part_mask_rend))
+        #     correct_pose_output['superpixel_labels'],                             #REPLACE WITH SUPP_DICT
+        #     np.asarray(resize_image(part_mask_rend))                              #REPLACE WITH SUPPORT_PART_MASK
         # )
         
         # correct_pose_output = divide_boundary_superpixels_with_partitions(correct_pose_output, np.asarray(resize_image(part_mask_rend)), bound_superpixel)
@@ -652,8 +656,8 @@ def get_features_and_affinity_matrix(support_dict, query_dict, support_part_mask
         if 'use_seg_mask' in kwargs and kwargs['use_seg_mask']:
             
             # inner_superpixel_gt, bound_superpixel_gt = inner_and_outer_superpixel_mask(
-            #         gt_output['superpixel_labels'],
-            #         np.asarray(resize_image(seg_mask_real))
+            #         gt_output['superpixel_labels'],                           #REPLACE WITH QUERY_DICT
+            #         np.asarray(resize_image(seg_mask_real))                   #REPLACE WITH QUERY_IMAGE
             #     )
             # gt_output = divide_boundary_superpixels_with_partitions(gt_output, np.asarray(resize_image(seg_mask_real)), bound_superpixel_gt)
             # gt_output = create_dino_feature_for_added_labels(scale_dict1=gt_output)
@@ -662,8 +666,8 @@ def get_features_and_affinity_matrix(support_dict, query_dict, support_part_mask
         else:
             
             # inner_superpixel_gt, bound_superpixel_gt = inner_and_outer_superpixel_mask(
-            #         gt_output['superpixel_labels'],
-            #         np.asarray(resize_image(seg_mask_real))
+            #         gt_output['superpixel_labels'],                           #REPLACE WITH QUERY_DICT
+            #         np.asarray(resize_image(seg_mask_real))                   #REPLACE WITH QUERY_IMAGE
             #     )
             # gt_output = divide_boundary_superpixels_with_partitions(gt_output, np.asarray(resize_image(seg_mask_real)), bound_superpixel_gt)
             # gt_output = create_dino_feature_for_added_labels(scale_dict1=gt_output)
@@ -698,6 +702,12 @@ def get_features_and_affinity_matrix(support_dict, query_dict, support_part_mask
 import numpy as np
 
 def get_query_feature_and_affinity_matrix(support_image, support_part_mask, support_full_mask, query_image, query_part_mask, query_full_mask):
+    #ONE LINE DESCRIPTION: 
+        #INPUT: GETS SUPPORT IMAGES + MASK, QUERY IMAGES + MASK
+        #OUTPUT: SUPPORT SUPERPIXELS AND THEIR FEATURES, QUERY SUPERPIXELS AND THEIR FEATURES, AND THE AFFINITY MATRIX
+
+
+
     # MULTI SCALE CASE
 
     n_sups = 1024
