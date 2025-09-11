@@ -20,6 +20,38 @@ import copy
 import transformers, tokenizers
 transformers.__version__, tokenizers.__version__
 
+def visualize_queryOrSupport(query_dict, save_path=None):
+    """
+    Visualize a query_dict with keys:
+    ['original_image', 'superpixel_overlayed', 'superpixel_labels', 'superpixel_features']
+    """
+    original = query_dict["original_image"]
+    overlay = query_dict["superpixel_overlayed"]
+    labels = query_dict["superpixel_labels"]
+
+    fig, axes = plt.subplots(1, 2, figsize=(15, 5))
+
+    axes[0].imshow(original)
+    axes[0].set_title("Original Image")
+
+    axes[1].imshow(overlay)
+    axes[1].set_title("Superpixel Overlayed")
+
+
+    for ax in axes:
+        ax.axis("off")
+
+    plt.tight_layout()
+
+    if save_path:
+        plt.savefig(save_path)
+        plt.close()
+        print(f"Saved query visualization to {save_path}")
+    else:
+        plt.show()
+
+
+
 def display_images_in_grid(images, rows, cols, figsize=(20, 30), cmap='gray'):
    """Displays a grid of images
 
@@ -644,12 +676,27 @@ def get_features_and_affinity_matrix(support_dict, query_dict, support_part_mask
         
         # correct_pose_output = divide_boundary_superpixels_with_partitions(correct_pose_output, np.asarray(resize_image(part_mask_rend)), bound_superpixel)
         # correct_pose_output = create_dino_feature_for_added_labels(scale_dict1=correct_pose_output)
+
+        #latest code implementation
+        inner_superpixel, bound_superpixel = inner_and_outer_superpixel_mask(
+            support_dict['superpixel_labels'],                                      
+            np.asarray(resize_image(support_part_mask))                              
+        )
+
+        # print(f"inner_superpixel.shape = {len(inner_superpixel)}")
+        # print(f"inner_superpixel = {inner_superpixel}")
+
+        # print(f"bound_superpixel.shape = {len(bound_superpixel)}")
+        # print(f"bound_superpixel = {bound_superpixel}")
+        
+        support_dict = divide_boundary_superpixels_with_partitions(support_dict, np.asarray(resize_image(support_part_mask)), bound_superpixel)
+        support_dict = create_dino_feature_for_added_labels(scale_dict1=support_dict)
         
         # get the superpixels corresponding to the parts
-        support_part_superpixels= np.unique(support_dict['superpixel_labels'][np.asarray(resize_image(support_part_mask)) > 0])
+        support_part_superpixels= np.unique(support_dict['superpixel_labels'][np.asarray(resize_image(support_part_mask)) > 0])     #FIRST FINDS THE SUPERPIXEL LABELS THAT LIE IN THE PART MASK, AND THEN TAKES ONLY THE UNIQUE ONES AMONG THEM
 
         #returning query_part mask superpixel which will be used as GT
-        gt_query_part_superpixels = np.unique(query_dict['superpixel_labels'][np.asarray(resize_image(query_part_mask)) > 0])
+        gt_query_part_superpixels = np.unique(query_dict['superpixel_labels'][np.asarray(resize_image(query_part_mask)) > 0])       
 
         
         #below is added real_sups_seg code
@@ -661,22 +708,38 @@ def get_features_and_affinity_matrix(support_dict, query_dict, support_part_mask
             #     )
             # gt_output = divide_boundary_superpixels_with_partitions(gt_output, np.asarray(resize_image(seg_mask_real)), bound_superpixel_gt)
             # gt_output = create_dino_feature_for_added_labels(scale_dict1=gt_output)
-            query_full_superpixels = np.unique(query_dict['superpixel_labels'][np.asarray(resize_image(query_full_mask)) > 0])
+
+            inner_superpixel_gt, bound_superpixel_gt = inner_and_outer_superpixel_mask(
+                    query_dict['superpixel_labels'],                           #REPLACE WITH QUERY_DICT
+                    np.asarray(resize_image(query_full_mask))                   #REPLACE WITH QUERY_IMAGE
+                )
+            query_dict = divide_boundary_superpixels_with_partitions(query_dict, np.asarray(resize_image(query_full_mask)), bound_superpixel_gt)
+            query_dict = create_dino_feature_for_added_labels(scale_dict1=query_dict)
+
+            query_full_superpixels = np.unique(query_dict['superpixel_labels'][np.asarray(resize_image(query_full_mask)) > 0])          #DIFFERENCE BTW IF AND ELSE CONDITION (HERE, THE QUERY_FULL_SUPERPIXELS WILL ONLY BE FROM THE QUERY FULL MASK)
             
         else:
             
             # inner_superpixel_gt, bound_superpixel_gt = inner_and_outer_superpixel_mask(
-            #         gt_output['superpixel_labels'],                           #REPLACE WITH QUERY_DICT
-            #         np.asarray(resize_image(seg_mask_real))                   #REPLACE WITH QUERY_IMAGE
+            #         gt_output['superpixel_labels'],                                     #REPLACE WITH QUERY_DICT
+            #         np.asarray(resize_image(query_full_mask))                             #REPLACE WITH QUERY_IMAGE
             #     )
-            # gt_output = divide_boundary_superpixels_with_partitions(gt_output, np.asarray(resize_image(seg_mask_real)), bound_superpixel_gt)
-            # gt_output = create_dino_feature_for_added_labels(scale_dict1=gt_output)
-            query_full_superpixels = np.unique(query_dict['superpixel_labels'])
-            
+            # gt_output = divide_boundary_superpixels_with_partitions(query_dict, np.asarray(resize_image(query_full_mask)), bound_superpixel_gt)
+            # gt_output = create_dino_feature_for_added_labels(scale_dict1=query_dict)
+
+            inner_superpixel_gt, bound_superpixel_gt = inner_and_outer_superpixel_mask(
+                    query_dict['superpixel_labels'],                                     #REPLACE WITH QUERY_DICT
+                    np.asarray(resize_image(query_full_mask))                             #REPLACE WITH QUERY_IMAGE
+                )
+            query_dict = divide_boundary_superpixels_with_partitions(query_dict, np.asarray(resize_image(query_full_mask)), bound_superpixel_gt)
+            query_dict = create_dino_feature_for_added_labels(scale_dict1=query_dict)
+
+            query_full_superpixels = np.unique(query_dict['superpixel_labels'])                                                        # DIFFERENCE FROM IF CONDITION (HERE, THE QUERY_FULL_SUPERPIXELS WILL INCLUDE THE WHOLE SUPERPIXELS)
+
         
         # get the cosine distance matrix
         ss = StandardScaler()
-        cos_mat_dist = normalize(ss.fit_transform(query_dict['superpixel_features']))@normalize(ss.fit_transform(support_dict['superpixel_features'])).T
+        cos_mat_dist = normalize(ss.fit_transform(query_dict['superpixel_features']))@normalize(ss.fit_transform(support_dict['superpixel_features'])).T       #normalize(query) @ normalize(support).T finds the dot product btw each query and support superpixel. ss.fit_transform performs the z-normalisation, while normalise() takes the unit vector along the dimension, or the vector with magnitude one along the superpixel's feature direction 
 
 
         # get the superpixel distances and subtract them from the cosine distance matrix
@@ -685,21 +748,36 @@ def get_features_and_affinity_matrix(support_dict, query_dict, support_part_mask
                 raise("distance_lambda needs to be provided to use superpixel distance information")
             cos_mat_dist -= kwargs['distance_lambda']*get_centroid_distances(support_dict, query_dict)
         
-        # select only the required parts
+        # select only the required parts (ONLY THE ONES FROM SUPPORT_MASK)
+        # print(f"cos_mat_dist.shape initially: {cos_mat_dist.shape}")
         cos_mat_dist = cos_mat_dist[:, support_part_superpixels]
+        # print(f"cos_mat_dist.shape after providing support part info: {cos_mat_dist.shape}")
 
         if 'use_seg_mask' in kwargs and kwargs['use_seg_mask']:
-            cos_mat_dist = cos_mat_dist[query_full_superpixels]
+            # print(f"cos_mat_dist.shape initially: {cos_mat_dist.shape}")
+            cos_mat_dist = cos_mat_dist[query_full_superpixels]             #CONSIDERING ONLY THE SUPERPIXELS BELONGING TO THE QUERY FULL MASK
+            # print(f"cos_mat_dist.shape after providing query object mask info: {cos_mat_dist.shape}")
+
+        # print("Shape:", cos_mat_dist.shape)
+        # print("Min:", cos_mat_dist.min())
+        # print("Max:", cos_mat_dist.max())
+        # print("Mean:", cos_mat_dist.mean())
+        # print("Std:", cos_mat_dist.std())
+        # print("Any NaN?:", np.isnan(cos_mat_dist).any())
+        # print("Any Inf?:", np.isinf(cos_mat_dist).any())
 
         # apply column-wise softmax
-        if 'softmax' in kwargs and kwargs['softmax']:
+        if 'softmax' in kwargs and kwargs['softmax']:       #(WE CAN STILL HAVE NEGATIVE VALUES HERE, BUT THEY'LL ALL CONTRIBUTE TO A MAGNITUDE OF 1, BUT AFTER SOFTMAX, WE'LL ONLY HAVE POSITIVE VALUES)
             # print(cluster_labels.shape)
-            cos_mat_dist = softmax(cos_mat_dist, axis=0)
+            # print(f"cos_mat_dist.shape initially: {cos_mat_dist.shape}")
+            cos_mat_dist = softmax(cos_mat_dist, axis=0)                    #FOR A GIVEN SUPPORT SUPERPIXEL, FIND THE PROBABILITY DISTRIBUTION OVER THE QUERY SUPERPIXELS REGARDING WHICH ONE MIGHT CORRESPOND TO THIS SUPPORT SUPERPIXEL
+            # print(f"cos_mat_dist.shape after taking softmax: {cos_mat_dist.shape}")
       
-    # returning query_dict and the affinity matrix   
+    # returning query_dict and the affinity matrix
     return query_dict, support_dict, query_full_superpixels, support_part_superpixels, gt_query_part_superpixels, cos_mat_dist
 
 import numpy as np
+
 
 def get_query_feature_and_affinity_matrix(support_image, support_part_mask, support_full_mask, query_image, query_part_mask, query_full_mask):
     #ONE LINE DESCRIPTION: 
@@ -721,10 +799,21 @@ def get_query_feature_and_affinity_matrix(support_image, support_part_mask, supp
     #query_image, query_full_mask = query_image, query_full_mask
 
     # Get the result dictionary for the real image
-    query_dict = get_superpixel_features(model=model, image_processor=image_processor, img=query_image, n_superpixels=n_sups)
+    query_dict1 = get_superpixel_features(model=model, image_processor=image_processor, img=query_image, n_superpixels=n_sups)
 
     # Get the result dictionary for the rendered image
-    support_dict = get_superpixel_features(model=model, image_processor=image_processor, img=support_image, n_superpixels=correct_pose_sups)
+    support_dict1 = get_superpixel_features(model=model, image_processor=image_processor, img=support_image, n_superpixels=correct_pose_sups)
+
+    # print(f"query_dict: {query_dict.keys()}, support_dict: {support_dict.keys()}")
+    # print(f"query_image_shape: {query_dict['original_image'].shape}, query_superpixels_shape: {query_dict['superpixel_overlayed'].shape}")
+    # print(f"query_superpixel_labels_shape: {query_dict['superpixel_labels'].shape}, query_superpixel_features_shape: {query_dict['superpixel_features'].shape}")
+
+    # print(f"support_image_shape: {support_dict['original_image'].shape}, support_superpixels_shape: {support_dict['superpixel_overlayed'].shape}")
+    # print(f"support_superpixel_labels_shape: {support_dict['superpixel_labels'].shape}, support_superpixel_features_shape: {support_dict['superpixel_features'].shape}")
+
+    # # from understanding_pruningCode_shashank import visualize_queryOrSupport
+    # visualize_queryOrSupport(query_dict, save_path="./visualizations/queryBeforeFn_vis.png")
+    # visualize_queryOrSupport(support_dict, save_path="./visualizations/supportBeforeFn_vis.png")
 
     # Output path setup
     #out_path = f'./outputs/Experiment_1'
@@ -734,8 +823,8 @@ def get_query_feature_and_affinity_matrix(support_image, support_part_mask, supp
 
     # Get the predicted front_mask
     query_dict, support_dict, query_full_superpixels, support_part_superpixels, gt_query_part_superpixels, cos_mat_dist = get_features_and_affinity_matrix(
-        support_dict, 
-        query_dict, 
+        support_dict1, 
+        query_dict1, 
         support_part_mask, 
         query_full_mask, 
         query_part_mask,
@@ -748,5 +837,17 @@ def get_query_feature_and_affinity_matrix(support_image, support_part_mask, supp
         multi_scale=False, 
         scale_list=correct_pose_sups
     )
+
+    # different1 = np.any(query_dict['superpixel_overlayed'] != query_dict1['superpixel_overlayed'])
+    # different2 = np.any(query_dict['original_image'] != query_dict1['original_image'])
+    # different3 = np.any(query_dict['superpixel_labels'] != query_dict1['superpixel_labels'])
+    # different4 = np.any(query_dict['superpixel_features'] != query_dict1['superpixel_features'])
+    # different5 = np.any(support_dict['superpixel_overlayed'] != support_dict['superpixel_overlayed'])
+    # different6 = np.any(support_dict['original_image'] != support_dict['original_image'])
+    # different7 = np.any(support_dict['superpixel_labels'] != support_dict['superpixel_labels'])
+    # different8 = np.any(support_dict['superpixel_features'] != support_dict['superpixel_features'])
+    
+    # print(f"{different1}, {different2}, {different3}, {different4}, {different5}, {different6}, {different7}, {different8}")
+
         
     return query_dict, support_dict, query_full_superpixels, support_part_superpixels, gt_query_part_superpixels, cos_mat_dist

@@ -171,26 +171,47 @@ for batch in dataloader:
     # print(f"batch: {batch.keys()}")
     # visualize_batch(batch)
     print(f"object_id: {batch['object_id']}, part_id: {batch['part_id']}")
+    # print("length of batch = ", len(batch))
+    # print(batch)
+    # print(a)
 
     # the below code is to get the item
     for i in range(len(batch['query_image'])):
+        # print("length = ", len(batch['query_image']))
+        # visualize_queryOrSupport(query_dict, save_path="./visualizations/query_vis_beforePruning.png")
+        # visualize_queryOrSupport(support_dict, save_path="./visualizations/support_vis_beforePruning.png")
+
+
         query_dict, support_dict, query_full_superpixels, support_part_superpixels, gt_query_part_superpixels, cos_mat_dist = get_query_feature_and_affinity_matrix(batch["support_image"][i], batch["support_part_mask"][i], 
                                                                                                      batch["support_full_mask"][i], 
                                                                                                      batch["query_image"][i], batch["query_part_mask"][i], 
                                                                                                      batch["query_full_mask"][i])
-        
-        print(f"query_dict: {query_dict.keys()}, support_dict: {support_dict.keys()}")
-        print(f"query_image_shape: {query_dict['original_image'].shape}, query_superpixels_shape: {query_dict['superpixel_overlayed'].shape}")
-        print(f"query_superpixel_labels_shape: {query_dict['superpixel_labels'].shape}, query_superpixel_features_shape: {query_dict['superpixel_features'].shape}")
 
-        print(f"support_image_shape: {support_dict['original_image'].shape}, support_superpixels_shape: {support_dict['superpixel_overlayed'].shape}")
-        print(f"support_superpixel_labels_shape: {support_dict['superpixel_labels'].shape}, support_superpixel_features_shape: {support_dict['superpixel_features'].shape}")
+        # visualize_queryOrSupport(query_dict, save_path="./visualizations/query_vis_afterPruning.png")
+        # visualize_queryOrSupport(support_dict, save_path="./visualizations/support_vis_afterPruning.png")
+        
+        # print(f"query_dict: {query_dict.keys()}, support_dict: {support_dict.keys()}")
+        # print(f"query_image_shape: {query_dict['original_image'].shape}, query_superpixels_shape: {query_dict['superpixel_overlayed'].shape}")
+        # print(f"query_superpixel_labels_shape: {query_dict['superpixel_labels'].shape}, query_superpixel_features_shape: {query_dict['superpixel_features'].shape}")
+
+        # print(f"support_image_shape: {support_dict['original_image'].shape}, support_superpixels_shape: {support_dict['superpixel_overlayed'].shape}")
+        # print(f"support_superpixel_labels_shape: {support_dict['superpixel_labels'].shape}, support_superpixel_features_shape: {support_dict['superpixel_features'].shape}")
         # visualize_queryOrSupport(query_dict, save_path="./visualizations/query_vis.png")
         # visualize_queryOrSupport(support_dict, save_path="./visualizations/support_vis.png")
-        # visualize_support(support_dict, save_path="support_vis.png")
         
         # print(query_dict.keys(), support_dict.keys(), query_full_superpixels.shape, support_part_superpixels.shape, gt_query_part_superpixels.shape, cos_mat_dist.shape)
         # print(query_full_superpixels.shape, support_part_superpixels.shape, gt_query_part_superpixels.shape, cos_mat_dist.shape)
+
+        # print(f"query_full_superpixels.shape = {query_full_superpixels.shape}")
+        # print(f"query_full_superpixels = {query_full_superpixels}")
+        # print(f"support_part_superpixels.shape = {support_part_superpixels.shape}")
+        # print(f"support_part_superpixels = {support_part_superpixels}")
+        # print(f"gt_query_part_superpixels.shape = {gt_query_part_superpixels.shape}")
+        # print(f"gt_query_part_superpixels = {gt_query_part_superpixels}")
+
+        # print(f"cos_mat_dist.shape = {cos_mat_dist.shape}")
+        # print(f"cos_mat_dist = {cos_mat_dist}")
+
     
 
     break       #FOR DEBUGGING
