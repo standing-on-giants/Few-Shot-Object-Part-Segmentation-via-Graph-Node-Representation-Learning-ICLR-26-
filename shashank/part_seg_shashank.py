@@ -646,7 +646,210 @@ def create_dino_feature_for_added_labels(scale_dict1):
 
     return return_dict
 
-def get_features_and_affinity_matrix(support_dict, query_dict, support_part_mask, query_full_mask, query_part_mask, airplane_name, out_path=None, **kwargs):
+
+
+
+
+def get_features_and_affinity_matrix_before_pruning(support_dict, query_dict, support_part_mask, query_full_mask, query_part_mask, airplane_name, out_path=None, **kwargs):
+    if out_path is not None:
+        #out_path_real = out_path + f"/{airplane_name}_real_pred_parts.jpg"
+        out_path_real = out_path + "/{}_real_pred_parts.jpg".format(airplane_name)
+    else:
+        out_path_real = None
+    
+    # if multi_Scale is selected
+    if 'multi_scale' in kwargs and kwargs['multi_scale']:
+        pass
+
+    else:
+        if out_path is not None:
+            #out_path_rend = out_path + f"/{airplane_name}_rendered_parts.jpg"
+            out_path_rend = out_path + "/{}_rendered_parts.jpg".format(airplane_name)
+        else:
+            out_path_rend = None
+
+        # #latest code implementation
+        # inner_superpixel, bound_superpixel = inner_and_outer_superpixel_mask(
+        #     correct_pose_output['superpixel_labels'],
+        #     np.asarray(resize_image(part_mask_rend))
+        # )
+        
+        # correct_pose_output = divide_boundary_superpixels_with_partitions(correct_pose_output, np.asarray(resize_image(part_mask_rend)), bound_superpixel)
+        # correct_pose_output = create_dino_feature_for_added_labels(scale_dict1=correct_pose_output)
+        
+        # get the superpixels corresponding to the parts
+        support_part_superpixels= np.unique(support_dict['superpixel_labels'][np.asarray(resize_image(support_part_mask)) > 0])
+
+        #returning query_part mask superpixel which will be used as GT
+        gt_query_part_superpixels = np.unique(query_dict['superpixel_labels'][np.asarray(resize_image(query_part_mask)) > 0])
+
+        
+        #below is added real_sups_seg code
+        if 'use_seg_mask' in kwargs and kwargs['use_seg_mask']:
+            
+            # inner_superpixel_gt, bound_superpixel_gt = inner_and_outer_superpixel_mask(
+            #         gt_output['superpixel_labels'],
+            #         np.asarray(resize_image(seg_mask_real))
+            #     )
+            # gt_output = divide_boundary_superpixels_with_partitions(gt_output, np.asarray(resize_image(seg_mask_real)), bound_superpixel_gt)
+            # gt_output = create_dino_feature_for_added_labels(scale_dict1=gt_output)
+            query_full_superpixels = np.unique(query_dict['superpixel_labels'][np.asarray(resize_image(query_full_mask)) > 0])
+            
+        else:
+            
+            # inner_superpixel_gt, bound_superpixel_gt = inner_and_outer_superpixel_mask(
+            #         gt_output['superpixel_labels'],
+            #         np.asarray(resize_image(seg_mask_real))
+            #     )
+            # gt_output = divide_boundary_superpixels_with_partitions(gt_output, np.asarray(resize_image(seg_mask_real)), bound_superpixel_gt)
+            # gt_output = create_dino_feature_for_added_labels(scale_dict1=gt_output)
+            query_full_superpixels = np.unique(query_dict['superpixel_labels'])
+            
+        
+        # get the cosine distance matrix
+        ss = StandardScaler()
+        cos_mat_dist = normalize(ss.fit_transform(query_dict['superpixel_features']))@normalize(ss.fit_transform(support_dict['superpixel_features'])).T
+
+
+        # get the superpixel distances and subtract them from the cosine distance matrix
+        if 'use_distance_info' in kwargs and kwargs['use_distance_info']:
+            if 'distance_lambda' not in kwargs:
+                raise("distance_lambda needs to be provided to use superpixel distance information")
+            cos_mat_dist -= kwargs['distance_lambda']*get_centroid_distances(support_dict, query_dict)
+        
+        # select only the required parts
+        cos_mat_dist = cos_mat_dist[:, support_part_superpixels]
+
+        if 'use_seg_mask' in kwargs and kwargs['use_seg_mask']:
+            cos_mat_dist = cos_mat_dist[query_full_superpixels]
+
+        # apply column-wise softmax
+        if 'softmax' in kwargs and kwargs['softmax']:
+            # print(cluster_labels.shape)
+            cos_mat_dist = softmax(cos_mat_dist, axis=0)
+      
+    # returning query_dict and the affinity matrix   
+    return query_dict, support_dict, query_full_superpixels, support_part_superpixels, gt_query_part_superpixels, cos_mat_dist
+
+
+def get_query_feature_and_affinity_matrix_before_pruning(support_image, support_part_mask, support_full_mask, query_image, query_part_mask, query_full_mask):
+    #ONE LINE DESCRIPTION: 
+        #INPUT: GETS SUPPORT IMAGES + MASK, QUERY IMAGES + MASK
+        #OUTPUT: SUPPORT SUPERPIXELS AND THEIR FEATURES, QUERY SUPERPIXELS AND THEIR FEATURES, AND THE AFFINITY MATRIX
+
+
+
+    # MULTI SCALE CASE
+
+    n_sups = 1024
+    correct_pose_sups = 1024
+    airplane_name = "GraphTraining"
+
+    # Get the rendered plane and part mask
+    #support_image, support_part_mask, support_full_mask = support_image, support_mask, support_full_mask
+
+    # Get the real image and segmentation mask
+    #query_image, query_full_mask = query_image, query_full_mask
+
+    # Get the result dictionary for the real image
+    query_dict1 = get_superpixel_features(model=model, image_processor=image_processor, img=query_image, n_superpixels=n_sups)
+
+    # Get the result dictionary for the rendered image
+    support_dict1 = get_superpixel_features(model=model, image_processor=image_processor, img=support_image, n_superpixels=correct_pose_sups)
+
+    # print(f"query_dict: {query_dict.keys()}, support_dict: {support_dict.keys()}")
+    # print(f"query_image_shape: {query_dict['original_image'].shape}, query_superpixels_shape: {query_dict['superpixel_overlayed'].shape}")
+    # print(f"query_superpixel_labels_shape: {query_dict['superpixel_labels'].shape}, query_superpixel_features_shape: {query_dict['superpixel_features'].shape}")
+
+    # print(f"support_image_shape: {support_dict['original_image'].shape}, support_superpixels_shape: {support_dict['superpixel_overlayed'].shape}")
+    # print(f"support_superpixel_labels_shape: {support_dict['superpixel_labels'].shape}, support_superpixel_features_shape: {support_dict['superpixel_features'].shape}")
+
+    # # from understanding_pruningCode_shashank import visualize_queryOrSupport
+    # visualize_queryOrSupport(query_dict, save_path="./visualizations/queryBeforeFn_vis.png")
+    # visualize_queryOrSupport(support_dict, save_path="./visualizations/supportBeforeFn_vis.png")
+
+    # Output path setup
+    #out_path = f'./outputs/Experiment_1'
+    out_path = './outputs/Experiment_1'
+    if not os.path.isdir(out_path):
+        os.makedirs(out_path)
+
+    # Get the predicted front_mask
+    query_dict, support_dict, query_full_superpixels, support_part_superpixels, gt_query_part_superpixels, cos_mat_dist = get_features_and_affinity_matrix_before_pruning(
+        support_dict1, 
+        query_dict1, 
+        support_part_mask, 
+        query_full_mask, 
+        query_part_mask,
+        airplane_name, 
+        out_path=out_path, 
+        use_seg_mask=True, 
+        softmax=True, 
+        use_distance_info=True, 
+        distance_lambda=3, 
+        multi_scale=False, 
+        scale_list=correct_pose_sups
+    )
+
+    # different1 = np.any(query_dict['superpixel_overlayed'] != query_dict1['superpixel_overlayed'])
+    # different2 = np.any(query_dict['original_image'] != query_dict1['original_image'])
+    # different3 = np.any(query_dict['superpixel_labels'] != query_dict1['superpixel_labels'])
+    # different4 = np.any(query_dict['superpixel_features'] != query_dict1['superpixel_features'])
+    # different5 = np.any(support_dict['superpixel_overlayed'] != support_dict['superpixel_overlayed'])
+    # different6 = np.any(support_dict['original_image'] != support_dict['original_image'])
+    # different7 = np.any(support_dict['superpixel_labels'] != support_dict['superpixel_labels'])
+    # different8 = np.any(support_dict['superpixel_features'] != support_dict['superpixel_features'])
+    
+    # print(f"{different1}, {different2}, {different3}, {different4}, {different5}, {different6}, {different7}, {different8}")
+
+        
+    return query_dict, support_dict, query_full_superpixels, support_part_superpixels, gt_query_part_superpixels, cos_mat_dist
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def get_features_and_affinity_matrix_after_pruning(support_dict, query_dict, support_part_mask, query_full_mask, query_part_mask, airplane_name, out_path=None, **kwargs):
     #GIVEN SUPPORT AND QUERY IMAGES/MASKS, ALONG WITH SUPERPIXELS AND THEIR LABELS, THIS FUNCTION RETURNS AN AFFINITY MATRIX REPRESENTING SIMILARITY BTW SUPERPIXEL FEATURES
 
 
@@ -695,9 +898,6 @@ def get_features_and_affinity_matrix(support_dict, query_dict, support_part_mask
         # get the superpixels corresponding to the parts
         support_part_superpixels= np.unique(support_dict['superpixel_labels'][np.asarray(resize_image(support_part_mask)) > 0])     #FIRST FINDS THE SUPERPIXEL LABELS THAT LIE IN THE PART MASK, AND THEN TAKES ONLY THE UNIQUE ONES AMONG THEM
 
-        #returning query_part mask superpixel which will be used as GT
-        gt_query_part_superpixels = np.unique(query_dict['superpixel_labels'][np.asarray(resize_image(query_part_mask)) > 0])       
-
         
         #below is added real_sups_seg code
         if 'use_seg_mask' in kwargs and kwargs['use_seg_mask']:
@@ -736,6 +936,8 @@ def get_features_and_affinity_matrix(support_dict, query_dict, support_part_mask
 
             query_full_superpixels = np.unique(query_dict['superpixel_labels'])                                                        # DIFFERENCE FROM IF CONDITION (HERE, THE QUERY_FULL_SUPERPIXELS WILL INCLUDE THE WHOLE SUPERPIXELS)
 
+
+             
         
         # get the cosine distance matrix
         ss = StandardScaler()
@@ -772,6 +974,17 @@ def get_features_and_affinity_matrix(support_dict, query_dict, support_part_mask
             # print(f"cos_mat_dist.shape initially: {cos_mat_dist.shape}")
             cos_mat_dist = softmax(cos_mat_dist, axis=0)                    #FOR A GIVEN SUPPORT SUPERPIXEL, FIND THE PROBABILITY DISTRIBUTION OVER THE QUERY SUPERPIXELS REGARDING WHICH ONE MIGHT CORRESPOND TO THIS SUPPORT SUPERPIXEL
             # print(f"cos_mat_dist.shape after taking softmax: {cos_mat_dist.shape}")
+        
+
+        #returning query_part mask superpixel which will be used as GT
+        query_dict_copy = query_dict.copy()
+        inner_superpixel_part_gt, bound_superpixel_part_gt = inner_and_outer_superpixel_mask(
+                    query_dict_copy['superpixel_labels'],                                     
+                    np.asarray(resize_image(query_part_mask))                             
+                )
+        query_dict_part = divide_boundary_superpixels_with_partitions(query_dict_copy, np.asarray(resize_image(query_part_mask)), bound_superpixel_gt)
+        query_dict_part = create_dino_feature_for_added_labels(scale_dict1=query_dict_part)
+        gt_query_part_superpixels = np.unique(query_dict_part['superpixel_labels'][np.asarray(resize_image(query_part_mask)) > 0]) 
       
     # returning query_dict and the affinity matrix
     return query_dict, support_dict, query_full_superpixels, support_part_superpixels, gt_query_part_superpixels, cos_mat_dist
@@ -779,7 +992,7 @@ def get_features_and_affinity_matrix(support_dict, query_dict, support_part_mask
 import numpy as np
 
 
-def get_query_feature_and_affinity_matrix(support_image, support_part_mask, support_full_mask, query_image, query_part_mask, query_full_mask):
+def get_query_feature_and_affinity_matrix_after_pruning(support_image, support_part_mask, support_full_mask, query_image, query_part_mask, query_full_mask):
     #ONE LINE DESCRIPTION: 
         #INPUT: GETS SUPPORT IMAGES + MASK, QUERY IMAGES + MASK
         #OUTPUT: SUPPORT SUPERPIXELS AND THEIR FEATURES, QUERY SUPERPIXELS AND THEIR FEATURES, AND THE AFFINITY MATRIX
@@ -822,7 +1035,7 @@ def get_query_feature_and_affinity_matrix(support_image, support_part_mask, supp
         os.makedirs(out_path)
 
     # Get the predicted front_mask
-    query_dict, support_dict, query_full_superpixels, support_part_superpixels, gt_query_part_superpixels, cos_mat_dist = get_features_and_affinity_matrix(
+    query_dict, support_dict, query_full_superpixels, support_part_superpixels, gt_query_part_superpixels, cos_mat_dist = get_features_and_affinity_matrix_after_pruning(
         support_dict1, 
         query_dict1, 
         support_part_mask, 
@@ -851,3 +1064,5 @@ def get_query_feature_and_affinity_matrix(support_image, support_part_mask, supp
 
         
     return query_dict, support_dict, query_full_superpixels, support_part_superpixels, gt_query_part_superpixels, cos_mat_dist
+
+

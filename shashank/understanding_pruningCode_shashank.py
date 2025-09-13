@@ -10,7 +10,7 @@ import torch.nn as nn
 from torch_geometric.data import Data
 #from torch_geometric.nn import gcn_norm
 from torch_geometric.nn.conv.gcn_conv import gcn_norm
-from part_seg_shashank import get_query_feature_and_affinity_matrix
+from part_seg_shashank import get_query_feature_and_affinity_matrix_before_pruning, get_query_feature_and_affinity_matrix_after_pruning
 import numpy as np
 import os
 
@@ -159,7 +159,117 @@ def visualize_queryOrSupport(query_dict, save_path=None):
     else:
         plt.show()
 
+
+
+
+def visualizeEffectOfPruning(support_dict, support_part_blendedImage_before, query_full_blendedImage_before, query_part_blendedImage_before,
+                            query_dict, support_part_blendedImage_after, query_full_blendedImage_after, query_part_blendedImage_after, 
+                            save_path=None):
+    
+    #CALLED AS
+    # visualizeEffectOfPruning(support_dict, support_part_blendedImage_before, query_full_blendedImage_before, query_part_blendedImage_before,
+    #                              query_dict, support_part_blendedImage_after, query_full_blendedImage_after, query_part_blendedImage_after, 
+    #                              save_path="./visualizations/pruningEffect")      
+
+
+
+    fig, axes = plt.subplots(2, 4, figsize=(15, 5))
+
+    axes[0][0].imshow(support_dict["original_image"])
+    axes[0][0].set_title("Support image")
+
+    axes[0][1].imshow(support_part_blendedImage_before)
+    axes[0][1].set_title("support part before pruning")
+
+    axes[0][2].imshow(query_full_blendedImage_before)
+    axes[0][2].set_title("query full before pruning")
+
+    axes[0][3].imshow(query_part_blendedImage_before)
+    axes[0][3].set_title("query part before pruning")
+
+    axes[1][0].imshow(query_dict["original_image"])
+    axes[1][0].set_title("query image")
+
+    axes[1][1].imshow(support_part_blendedImage_after)
+    axes[1][1].set_title("support part after pruning")
+
+    axes[1][2].imshow(query_full_blendedImage_after)
+    axes[1][2].set_title("query full after pruning")
+
+    axes[1][3].imshow(query_part_blendedImage_after)
+    axes[1][3].set_title("query part after pruning")
+
+
+    # for ax in axes:
+        # ax.axis("off")
+    for ax in axes.flat:
+        ax.axis("off")
+
+
+    plt.tight_layout()
+
+    if save_path:
+        plt.savefig(save_path)
+        plt.close()
+        print(f"Saved visualization of the effect of Pruning to {save_path}")
+    else:
+        plt.show()
+
 #####################################################
+
+from torchvision import transforms
+from PIL import Image
+import cv2
+
+def resize_image(img):
+    """Resize the input image using torchvision transforms
+    """
+    to_pil_image = transforms.ToPILImage()
+    resize_transform = transforms.Resize(size=(224, 224))
+
+    return resize_transform(to_pil_image(img))
+
+def display_overlap_images(img_list, alpha=None, save=False, path=None):
+    """Provided the image list and corresponding alphas, output the overlapped image
+    """
+    if alpha is None:
+        alpha = [1]
+        for i in range(1, len(img_list)):
+            alpha.append(0.5)
+    
+    if save and path is None:
+        path = 'overlap_image'
+        
+    if len(img_list) < 2:
+        raise("At least 2 images are required for overlapping")
+    
+
+    blended_image = Image.blend(Image.fromarray(img_list[0]).convert("RGB"), Image.fromarray(img_list[1]).convert("RGB"), alpha[1])
+    for i in range(2, len(img_list)):
+        blended_image = Image.blend(blended_image, Image.fromarray(img_list[i]).convert("RGB"), alpha[i])
+    
+    
+    
+    #blended_image = Image.blend(blended_image, Image.fromarray(superpixel_intensity_rgb).convert("RGB"), alpha[i])
+
+
+    blended_image = np.asarray(blended_image)
+    #print(blended_image.shape)
+
+    plt.axis('off')
+    plt.tight_layout()
+    plt.imshow(blended_image)
+    
+    if save:
+        cv2.imwrite(path, cv2.cvtColor(blended_image, cv2.COLOR_RGB2BGR))
+    
+    #cv2.imwrite("/home/iiitb/Desktop/anant/GridRaster/parts_ours/blended_image.png", cv2.cvtColor(blended_image, cv2.COLOR_RGB2BGR))
+
+    #Added code by Anant
+    return blended_image
+
+
+#############################################
 
 
 
@@ -182,10 +292,37 @@ for batch in dataloader:
         # visualize_queryOrSupport(support_dict, save_path="./visualizations/support_vis_beforePruning.png")
 
 
-        query_dict, support_dict, query_full_superpixels, support_part_superpixels, gt_query_part_superpixels, cos_mat_dist = get_query_feature_and_affinity_matrix(batch["support_image"][i], batch["support_part_mask"][i], 
+        query_dictBefore, support_dictBefore, query_full_superpixelsBefore, support_part_superpixelsBefore, gt_query_part_superpixelsBefore, cos_mat_distBefore = get_query_feature_and_affinity_matrix_before_pruning(batch["support_image"][i], batch["support_part_mask"][i], 
                                                                                                      batch["support_full_mask"][i], 
                                                                                                      batch["query_image"][i], batch["query_part_mask"][i], 
                                                                                                      batch["query_full_mask"][i])
+
+
+        query_dictAfter, support_dictAfter, query_full_superpixelsAfter, support_part_superpixelsAfter, gt_query_part_superpixelsAfter, cos_mat_distAfter = get_query_feature_and_affinity_matrix_after_pruning(batch["support_image"][i], batch["support_part_mask"][i], 
+                                                                                                     batch["support_full_mask"][i], 
+                                                                                                     batch["query_image"][i], batch["query_part_mask"][i], 
+                                                                                                     batch["query_full_mask"][i])
+
+
+
+
+        support_part_blendedImage_before = display_overlap_images([support_dictBefore['original_image'], np.isin(support_dictBefore['superpixel_labels'], support_part_superpixelsBefore), support_dictBefore['superpixel_overlayed']], alpha=[0, 0.8, 0.2], save=True, path="./visualizations/overlapDisplay3.png")
+        query_full_blendedImage_before = display_overlap_images([query_dictBefore['original_image'], np.isin(query_dictBefore['superpixel_labels'], query_full_superpixelsBefore), query_dictBefore['superpixel_overlayed']], alpha=[0, 0.8, 0.2], save=True, path="./visualizations/overlapDisplay3.png")
+        query_part_blendedImage_before = display_overlap_images([query_dictBefore['original_image'], np.isin(query_dictBefore['superpixel_labels'], gt_query_part_superpixelsBefore), query_dictBefore['superpixel_overlayed']], alpha=[0, 0.8, 0.2], save=True, path="./visualizations/overlapDisplay3.png")
+
+
+        support_part_blendedImage_after = display_overlap_images([support_dictAfter['original_image'], np.isin(support_dictAfter['superpixel_labels'], support_part_superpixelsAfter), support_dictAfter['superpixel_overlayed']], alpha=[0, 0.8, 0.2], save=True, path="./visualizations/overlapDisplay3.png")
+        query_full_blendedImage_after = display_overlap_images([query_dictAfter['original_image'], np.isin(query_dictAfter['superpixel_labels'], query_full_superpixelsAfter), query_dictAfter['superpixel_overlayed']], alpha=[0, 0.8, 0.2], save=True, path="./visualizations/overlapDisplay3.png")
+        query_part_blendedImage_after = display_overlap_images([query_dictAfter['original_image'], np.isin(query_dictAfter['superpixel_labels'], gt_query_part_superpixelsAfter), query_dictAfter['superpixel_overlayed']], alpha=[0, 0.8, 0.2], save=True, path="./visualizations/overlapDisplay3.png")
+
+        visualizeEffectOfPruning(support_dictBefore, support_part_blendedImage_before, query_full_blendedImage_before, query_part_blendedImage_before,
+                                 query_dictBefore, support_part_blendedImage_after, query_full_blendedImage_after, query_part_blendedImage_after, 
+                                 save_path="./visualizations/pruningEffect")
+
+
+        # visualizeEffectOfPruning(query_dict, , save_path="./visualizations/query_effectOfPruning")
+
+
 
         # visualize_queryOrSupport(query_dict, save_path="./visualizations/query_vis_afterPruning.png")
         # visualize_queryOrSupport(support_dict, save_path="./visualizations/support_vis_afterPruning.png")
@@ -214,4 +351,4 @@ for batch in dataloader:
 
     
 
-    break       #FOR DEBUGGING
+    # break       #FOR DEBUGGING

@@ -7,7 +7,7 @@ import torch.nn as nn
 from torch_geometric.data import Data
 #from torch_geometric.nn import gcn_norm
 from torch_geometric.nn.conv.gcn_conv import gcn_norm
-from part_seg_shashank import get_query_feature_and_affinity_matrix
+from part_seg_shashank import get_query_feature_and_affinity_matrix_after_pruning
 import numpy as np
 import os
 
@@ -15,7 +15,7 @@ import os
 from tqdm import tqdm
 
 import pickle
-with open('/home/iiitb/Desktop/anant/GridRaster/part_ours_training/pascal_val.pkl', 'rb') as f:
+with open('/home/iiitb/Desktop/anant/GridRaster/part_ours_training/new_dict.pkl', 'rb') as f:
     supp_dict = pickle.load(f)
 
 
@@ -23,18 +23,18 @@ from torch.utils.data import DataLoader
 from dataset_shashank import PartQueryDataset, custom_transform
 
 # root directory pointing to training_data
-#dataset_root = "/home/iiitb/Desktop/anant/GridRaster/part_ours_training/data/training_data_MOHAN"
-dataset_root = "/home/iiitb/Desktop/anant/GridRaster/part_ours_training/data/testing_data_pascal_MOHAN" # remeber to use correct support dict
+dataset_root = "/home/iiitb/Desktop/anant/GridRaster/part_ours_training/data/training_data_MOHAN"
+# dataset_root = "/home/iiitb/Desktop/anant/GridRaster/part_ours_training/data/testing_data_pascal_MOHAN" # remeber to use correct support dict
 
 # supp_dict is defined above
 
 dataset = PartQueryDataset(root_dir=dataset_root, supp_dict=supp_dict, transform=custom_transform)
-dataloader = DataLoader(dataset, batch_size=8, shuffle=False, num_workers=8)
 
+dataloader = DataLoader(dataset, batch_size=8, shuffle=False, num_workers=8)
 from torch_geometric.data import Data, Batch
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-processed_data_dir = "test_processed_data_pascal"
+processed_data_dir = "shashank_data/train_processed_data_pruned_shashank"
 os.makedirs(processed_data_dir, exist_ok=True)
 
 idx = 0
@@ -44,13 +44,13 @@ for batch in dataloader:
 
     # the below code is to get the item
     for i in range(len(batch['query_image'])):
-        query_dict, support_dict, query_full_superpixels, support_part_superpixels, gt_query_part_superpixels, cos_mat_dist = get_query_feature_and_affinity_matrix(batch["support_image"][i], batch["support_part_mask"][i], 
+        query_dict, support_dict, query_full_superpixels, support_part_superpixels, gt_query_part_superpixels, cos_mat_dist = get_query_feature_and_affinity_matrix_after_pruning(batch["support_image"][i], batch["support_part_mask"][i], 
                                                                                                      batch["support_full_mask"][i], 
                                                                                                      batch["query_image"][i], batch["query_part_mask"][i], 
                                                                                                      batch["query_full_mask"][i])
         
-        #print(query_dict.keys(), support_dict.keys(), query_full_superpixels.shape, support_part_superpixels.shape, gt_query_part_superpixels.shape, cos_mat_dist.shape)
-        #print(query_full_superpixels.shape, support_part_superpixels.shape, gt_query_part_superpixels.shape, cos_mat_dist.shape)
+        # print(query_dict.keys(), support_dict.keys(), query_full_superpixels.shape, support_part_superpixels.shape, gt_query_part_superpixels.shape, cos_mat_dist.shape)
+        # print(query_full_superpixels.shape, support_part_superpixels.shape, gt_query_part_superpixels.shape, cos_mat_dist.shape)
 
         # Get node features
         X = torch.tensor(query_dict['superpixel_features'][query_full_superpixels], dtype=torch.float32)
