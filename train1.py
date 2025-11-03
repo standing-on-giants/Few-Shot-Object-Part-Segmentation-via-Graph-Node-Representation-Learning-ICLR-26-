@@ -24,7 +24,7 @@ MP_UNITS = [[1024, 1024], [1024, 1024]] # used in one MP and pool first time it 
 #MP_UNITS = [[512,256, 128]] # a list
 #MP_UNITS = [[512,256, 128],[128,64]] # a list( for 2 times)
 
-MLP_UNITS = [[512, 512], [512, 512]] #so single MP, first time it was []
+MLP_UNITS = [[512], [512]] #so single MP, first time it was []
 #MLP_UNITS = [[64,32]]
 #MLP_UNITS = [[64,32],[32,16]] # for two times
 
@@ -32,7 +32,7 @@ MP_ACT = 'ELU'
 #MLP_ACT = 'Identity'
 MLP_ACT = 'ReLU'
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-MODEL_DIR = "model_mp_[[1024, 1024], [1024, 1024]]_mlp_[[512, 512], [512, 512]]_AdjLearning_BS32_epoch_500"
+MODEL_DIR = "model_mp_[[1024, 1024], [1024, 1024]]_mlp_[[512], [512]]_AdjLearning_BS32_epoch_500"
 os.makedirs(MODEL_DIR, exist_ok=True)
 
 
@@ -67,8 +67,8 @@ model = Net_second(
 #optimizer = torch.optim.Adam(model.parameters(), lr=5e-4, weight_decay=1e-4)
 
 
-optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE, weight_decay=1e-4)
-#optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
+#optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE, weight_decay=1e-4)
+optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
 criterion = CrossEntropyLoss()
 
 #from torchviz import make_dot

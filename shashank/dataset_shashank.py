@@ -80,3 +80,70 @@ class PartQueryDataset(Dataset):
             "support_full_mask": support_full_mask,
             "support_part_mask": support_part_mask
         }
+
+
+class PartQueryDataset_singleImage(Dataset):
+    def __init__(self, query_image_path, query_full_mask_path, query_part_mask_path,
+                 object_id, part_id, supp_dict, transform=None):
+        """
+        Initializes dataset for a single query image instead of a folder.
+        """
+        self.query_image_path = query_image_path
+        self.query_full_mask_path = query_full_mask_path
+        self.query_part_mask_path = query_part_mask_path
+        self.object_id = object_id
+        self.part_id = part_id
+        self.supp_dict = supp_dict
+        self.transform = transform
+
+    def __len__(self):
+        return 1
+
+    def __getitem__(self, idx):
+        # folder_path = self.folder_paths[idx]
+        # folder_name = os.path.basename(folder_path)
+
+        # # Extract object_id and part_id from the folder name
+        # try:
+        #     parts = folder_name.split('_')
+        #     object_id = int(parts[-2])
+        #     part_id = int(parts[-1])
+        # except ValueError:
+        #     raise RuntimeError(f"Cannot parse object_id and part_id from folder name: {folder_name}")
+
+        # Load image and masks
+        query_image = Image.open(self.query_image_path).convert("RGB")
+        query_full_mask = Image.open(self.query_full_mask_path).convert("L")
+        query_part_mask = Image.open(self.query_part_mask_path).convert("L")
+
+        # Apply transform (if any)
+        if self.transform:
+            query_image = self.transform(query_image)
+            query_full_mask = self.transform(query_full_mask)
+            query_part_mask = self.transform(query_part_mask)
+        else:
+            # Default: convert to tensor
+            query_image = torch.from_numpy(np.array(query_image)).permute(2, 0, 1).float() / 255.0
+            query_full_mask = torch.from_numpy(np.array(query_full_mask)).unsqueeze(0).float()
+            query_part_mask = torch.from_numpy(np.array(query_part_mask)).unsqueeze(0).float()
+
+        # Get support from supp_dict using part_id
+        support_info = self.supp_dict.get(self.part_id, None)
+        if support_info is None:
+            raise KeyError(f"Support data for part_id {part_id} not found in supp_dict.")
+
+        # Apply transform to support data
+        support_image = self.transform(support_info["image"])
+        support_full_mask = self.transform(support_info["obj_mask"])
+        support_part_mask = self.transform(support_info["part_mask"])
+
+        return {
+            "query_image": query_image,
+            "query_full_mask": query_full_mask,
+            "query_part_mask": query_part_mask,
+            "object_id": self.object_id,
+            "part_id": self.part_id,
+            "support_image": support_image,
+            "support_full_mask": support_full_mask,
+            "support_part_mask": support_part_mask
+        }

@@ -13,3 +13,12 @@ runs/
 .DS_Store
 .vscode/
 .idea/
+data/
+shashank/__pycache__
+shashank/cos_dist_mat_visualization
+shashank/cos_dist_matrix_visualizations
+shashank/shashank_data
+shashank/shashank_models
+shashank/shashank_predictions
+shashank/shashank_predictions2
+shashank/visualizations

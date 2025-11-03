@@ -15,7 +15,7 @@ import os
 from tqdm import tqdm
 
 import pickle
-with open('/home/iiitb/Desktop/anant/GridRaster/part_ours_training/new_dict.pkl', 'rb') as f:
+with open('/home/iiitb/Desktop/anant/GridRaster/part_ours_training/new_dict_val.pkl', 'rb') as f:
     supp_dict = pickle.load(f)
 
 
@@ -23,8 +23,8 @@ from torch.utils.data import DataLoader
 from dataset_shashank import PartQueryDataset, custom_transform
 
 # root directory pointing to training_data
-dataset_root = "/home/iiitb/Desktop/anant/GridRaster/part_ours_training/data/training_data_MOHAN"
-# dataset_root = "/home/iiitb/Desktop/anant/GridRaster/part_ours_training/data/testing_data_pascal_MOHAN" # remeber to use correct support dict
+#dataset_root = "/home/iiitb/Desktop/anant/GridRaster/part_ours_training/data/testing_data_MOHAN"
+dataset_root = "/home/iiitb/Desktop/anant/GridRaster/part_ours_training/data/testing_data_MOHAN" # remeber to use correct support dict
 
 # supp_dict is defined above
 
@@ -34,7 +34,7 @@ dataloader = DataLoader(dataset, batch_size=8, shuffle=False, num_workers=8)
 from torch_geometric.data import Data, Batch
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-processed_data_dir = "shashank_data/train_processed_data_pruned_shashank"
+processed_data_dir = "shashank_data/testing_processed_ade"
 os.makedirs(processed_data_dir, exist_ok=True)
 
 idx = 0
@@ -103,8 +103,9 @@ for batch in dataloader:
 
 
         # Build PyG Data object (storing object_d and part_id which will be used in evaluation (optional for Training))
-        data = Data(x=X, x_part=X_part, batch_part=batch_part, edge_index=edge_index, edge_weight=edge_weight, y=y, object_id = batch['object_id'][i], part_id = batch['part_id'][i])
+        #data = Data(x=X, x_part=X_part, batch_part=batch_part, edge_index=edge_index, edge_weight=edge_weight, y=y, object_id = batch['object_id'][i], part_id = batch['part_id'][i])
 
+        data = Data(x=X, x_part=X_part, batch_part=batch_part, edge_index=edge_index, edge_weight=edge_weight, y=batch["query_part_mask"][i], object_id = batch['object_id'][i], part_id = batch['part_id'][i])
         data.segments = torch.tensor(segments, dtype=torch.long)  # [H, W]
         data.query_full_superpixels = torch.tensor(query_full_superpixels, dtype=torch.long)
         data.gt_query_part_superpixels = torch.tensor(gt_query_part_superpixels, dtype=torch.long)
@@ -114,6 +115,8 @@ for batch in dataloader:
         torch.save(data, os.path.join(processed_data_dir, f"graph_{idx}.pt"))
         idx += 1
 
+        #plt.imsave("saving_y.png", y.cpu().numpy(), cmap='gray')
+       
         print("Batch completed (count started from 1):", idx)
 
 
