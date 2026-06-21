@@ -22,3 +22,9 @@ shashank/shashank_models
 shashank/shashank_predictions
 shashank/shashank_predictions2
 shashank/visualizations
+
+# Ignore all files and folders at the root level
+/*
+# Do NOT ignore the shashank directory
+!/shashank/
+
