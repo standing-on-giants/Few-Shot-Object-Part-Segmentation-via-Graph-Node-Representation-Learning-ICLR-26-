@@ -28,3 +28,5 @@ shashank/visualizations
 # Do NOT ignore the shashank directory
 !/shashank/
 
+!.gitignore
+
