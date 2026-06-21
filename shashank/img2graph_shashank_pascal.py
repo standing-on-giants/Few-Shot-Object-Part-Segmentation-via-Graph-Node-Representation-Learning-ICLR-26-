@@ -15,7 +15,7 @@ import os
 from tqdm import tqdm
 
 import pickle
-with open('/home/iiitb/Desktop/anant/GridRaster/part_ours_training/new_dict_val.pkl', 'rb') as f:
+with open('/home/iiitb/Desktop/anant/GridRaster/part_ours_training/pascal_val.pkl', 'rb') as f:
     supp_dict = pickle.load(f)
 
 
@@ -24,7 +24,7 @@ from dataset_shashank import PartQueryDataset, custom_transform
 
 # root directory pointing to training_data
 #dataset_root = "/home/iiitb/Desktop/anant/GridRaster/part_ours_training/data/testing_data_MOHAN"
-dataset_root = "/home/iiitb/Desktop/anant/GridRaster/part_ours_training/data/testing_data_MOHAN" # remeber to use correct support dict
+dataset_root = "/home/iiitb/Desktop/anant/GridRaster/part_ours_training/data/testing_data_pascal_MOHAN" # remeber to use correct support dict
 
 # supp_dict is defined above
 
@@ -34,7 +34,7 @@ dataloader = DataLoader(dataset, batch_size=8, shuffle=False, num_workers=8)
 from torch_geometric.data import Data, Batch
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-processed_data_dir = "shashank_data/testing_processed_ade_new_2"
+processed_data_dir = "shashank_data/testing_processed_pascal"
 os.makedirs(processed_data_dir, exist_ok=True)
 
 idx = 0
@@ -142,7 +142,7 @@ for batch in dataloader:
         plt.imsave("superpixel_support.png", segments_support, cmap="gray")
         plt.imsave("superpixel_query.png", gt_query_part_seg, cmap="gray")
 
-        print(a)
+        #print(a)
 
         # Save data object
         torch.save(data, os.path.join(processed_data_dir, f"graph_{idx}.pt"))

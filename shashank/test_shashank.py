@@ -22,7 +22,7 @@ from evaluator.evaluator import SimplePartSegEvaluator
 # ----------------------
 # Configs (match train.py)
 # ----------------------
-TEST_DATA_DIR   = "shashank_data/testing_processed_ad"
+TEST_DATA_DIR   = "shashank_data/testing_processed_ade_new"
 #TEST_DATA_DIR   = "shashank_data/test_processed_data_pruned_shashank"
 OUTPUT_DIR      = "shashank_models/OUTPUT_model_pruned_mp_[1024]_mlp_[512]_noAdjLearning_BS32_epoch_500_shashank"
 MODEL_DIR       = "shashank_models/model_pruned_mp_[1024]_mlp_[512]_noAdjLearning_BS32_epoch_500_shashank"
