@@ -19,15 +19,17 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from evaluator.evaluator import SimplePartSegEvaluator
 
+WORKSPACE_DIR = os.environ.get("WORKSPACE_DIR", os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 # ----------------------
 # Configs (match train.py)
 # ----------------------
-TEST_DATA_DIR   = "shashank_data/testing_processed_ade_new"
+TEST_DATA_DIR   = os.environ.get("TEST_DATA_DIR", os.path.join(WORKSPACE_DIR, "shashank", "shashank_data", "testing_processed_ade_new"))
 #TEST_DATA_DIR   = "shashank_data/test_processed_data_pruned_shashank"
-OUTPUT_DIR      = "shashank_models/OUTPUT_model_pruned_mp_[1024]_mlp_[512]_noAdjLearning_BS32_epoch_500_shashank"
-MODEL_DIR       = "shashank_models/model_pruned_mp_[1024]_mlp_[512]_noAdjLearning_BS32_epoch_500_shashank"
+OUTPUT_DIR      = os.environ.get("OUTPUT_DIR", os.path.join(WORKSPACE_DIR, "shashank", "shashank_models", "OUTPUT_model_pruned_mp_[1024]_mlp_[512]_noAdjLearning_BS32_epoch_500_shashank"))
+MODEL_DIR       = os.environ.get("MODEL_DIR", os.path.join(WORKSPACE_DIR, "shashank", "shashank_models", "model_pruned_mp_[1024]_mlp_[512]_noAdjLearning_BS32_epoch_500_shashank"))
 #MODEL_DIR       = "shashank_models/model_1024_512_noAdjLearning"  #1st experiment
-MODEL_FILE      = os.path.join(MODEL_DIR, "best_model.pth")
+MODEL_FILE      = os.environ.get("MODEL_FILE", os.path.join(MODEL_DIR, "best_model.pth"))
 BATCH_SIZE      = 32
 DEVICE          = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # MP_UNITS        = [64]

@@ -15,7 +15,10 @@ import os
 from tqdm import tqdm
 
 import pickle
-with open('/home/iiitb/Desktop/anant/GridRaster/part_ours_training/new_dict_val.pkl', 'rb') as f:
+WORKSPACE_DIR = os.environ.get("WORKSPACE_DIR", os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+SUPPORT_DICT_PATH = os.environ.get("SUPPORT_DICT_PATH", os.path.join(WORKSPACE_DIR, "new_dict_val.pkl"))
+with open(SUPPORT_DICT_PATH, 'rb') as f:
     supp_dict = pickle.load(f)
 
 
@@ -23,8 +26,7 @@ from torch.utils.data import DataLoader
 from dataset_shashank import PartQueryDataset, custom_transform
 
 # root directory pointing to training_data
-#dataset_root = "/home/iiitb/Desktop/anant/GridRaster/part_ours_training/data/testing_data_MOHAN"
-dataset_root = "/home/iiitb/Desktop/anant/GridRaster/part_ours_training/data/testing_data_MOHAN" # remeber to use correct support dict
+dataset_root = os.environ.get("DATASET_ROOT", os.path.join(WORKSPACE_DIR, "data", "testing_data_MOHAN"))
 
 # supp_dict is defined above
 
@@ -34,7 +36,7 @@ dataloader = DataLoader(dataset, batch_size=8, shuffle=False, num_workers=8)
 from torch_geometric.data import Data, Batch
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-processed_data_dir = "shashank_data/testing_processed_ade"
+processed_data_dir = os.environ.get("PROCESSED_DATA_DIR", os.path.join(WORKSPACE_DIR, "shashank", "shashank_data", "testing_processed_ade"))
 os.makedirs(processed_data_dir, exist_ok=True)
 
 idx = 0

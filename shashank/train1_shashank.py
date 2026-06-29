@@ -35,12 +35,16 @@ MP_ACT = 'ELU'
 #MLP_ACT = 'Identity'
 MLP_ACT = 'ReLU'
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-MODEL_DIR = "shashank_models/model_1024_1024_512_noAdjLearning"
+
+WORKSPACE_DIR = os.environ.get("WORKSPACE_DIR", os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+MODEL_DIR = os.environ.get("MODEL_DIR", os.path.join(WORKSPACE_DIR, "shashank", "shashank_models", "model_1024_1024_512_noAdjLearning"))
 os.makedirs(MODEL_DIR, exist_ok=True)
 
 
 # getting the graph training Dataset
-dataset = GraphPartDataset("/home/iiitb/Desktop/anant/GridRaster/part_ours_training/shashank/shashank_data/training_processed_ade")  # load .pt files
+TRAIN_DATA_DIR = os.environ.get("TRAIN_DATA_DIR", os.path.join(WORKSPACE_DIR, "shashank", "shashank_data", "training_processed_ade"))
+dataset = GraphPartDataset(TRAIN_DATA_DIR)  # load .pt files
 loader = GeoDataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True)
 
 # ----------------------

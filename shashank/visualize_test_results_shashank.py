@@ -18,15 +18,17 @@ import matplotlib.pyplot as plt
 from datetime import datetime  # Import datetime
 from model_shashank import Net
 
-data_path = "./shashank_data/testing_processed_ade_new"
-output_dir = "./shashank_predictions2"
+WORKSPACE_DIR = os.environ.get("WORKSPACE_DIR", os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+data_path = os.environ.get("TEST_DATA_DIR", os.path.join(WORKSPACE_DIR, "shashank", "shashank_data", "testing_processed_ade_new"))
+output_dir = os.environ.get("OUTPUT_PRED_DIR", os.path.join(WORKSPACE_DIR, "shashank", "shashank_predictions2"))
 os.makedirs(output_dir, exist_ok=True)
 
 # Config
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 #MODEL_PATH = "/home/iiitb/Desktop/anant/GridRaster/saved_models/best_model.pth"
-MODEL_PATH = "./shashank_models/model_pruned_mp_[1024, 1024]_mlp_[512]_noAdjLearning_BS32_epoch_500_shashank/best_model.pth"
+MODEL_PATH = os.environ.get("MODEL_PATH", os.path.join(WORKSPACE_DIR, "shashank", "shashank_models", "model_pruned_mp_[1024, 1024]_mlp_[512]_noAdjLearning_BS32_epoch_500_shashank/best_model.pth"))
 MP_ACT = 'ELU'
 MLP_ACT = 'ReLU'
 IN_CHANNELS = 1024
