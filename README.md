@@ -24,13 +24,13 @@ part_ours_training/
 ### Step 2: Pull the Docker Image
 Pull the pre-built image directly from Docker Hub:
 ```bash
-docker pull shashank273/few-shot-part-seg:latest
+docker pull shashank273/few-shot-part-seg-reduced:latest
 ```
 
 ### Step 3: Run the Docker Container
 Launch the container with GPU support enabled, mounting your local repository directory into the `/workspace` folder inside the container:
 ```bash
-docker run --gpus all -it -v $(pwd):/workspace shashank273/few-shot-part-seg:latest
+docker run --gpus all -it -v $(pwd):/workspace shashank273/few-shot-part-seg-reduced:latest
 ```
 
 ---
