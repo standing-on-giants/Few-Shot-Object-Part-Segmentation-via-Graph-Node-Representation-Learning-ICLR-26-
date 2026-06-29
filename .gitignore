@@ -31,4 +31,5 @@ new/visualizations
 !/evaluator/
 
 !.gitignore
+!README.md
 
