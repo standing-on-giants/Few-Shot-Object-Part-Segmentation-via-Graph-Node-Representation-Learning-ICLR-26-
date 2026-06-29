@@ -21,16 +21,16 @@ part_ours_training/
 └── pascal_val.pkl                    # PASCAL Test Support Dictionary
 ```
 
-### Step 2: Build the Docker Image
-Build the container from the root directory (large datasets, git history, and output folders will be ignored during build to keep it fast):
+### Step 2: Pull the Docker Image
+Pull the pre-built image directly from Docker Hub:
 ```bash
-docker build -t few-shot-part-seg .
+docker pull shashank273/few-shot-part-seg:latest
 ```
 
 ### Step 3: Run the Docker Container
-Launch the container with GPU support enabled, mounting your host repository directory into the `/workspace` folder inside the container:
+Launch the container with GPU support enabled, mounting your local repository directory into the `/workspace` folder inside the container:
 ```bash
-docker run --gpus all -it -v $(pwd):/workspace few-shot-part-seg
+docker run --gpus all -it -v $(pwd):/workspace shashank273/few-shot-part-seg:latest
 ```
 
 ---
