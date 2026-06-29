@@ -5,8 +5,8 @@ import numpy as np
 from tqdm import tqdm
 from torch.nn import CrossEntropyLoss
 from torch_geometric.loader import DataLoader as GeoDataLoader
-from model_shashank import Net, Net_second          # or DenseMinCutNet
-from graph_dataset_shashank import GraphPartDataset
+from model_new import Net, Net_second          # or DenseMinCutNet
+from graph_dataset_new import GraphPartDataset
 from sklearn.metrics import normalized_mutual_info_score as NMI
 
 import matplotlib.pyplot as plt
@@ -24,11 +24,11 @@ WORKSPACE_DIR = os.environ.get("WORKSPACE_DIR", os.path.abspath(os.path.join(os.
 # ----------------------
 # Configs (match train.py)
 # ----------------------
-TEST_DATA_DIR   = os.environ.get("TEST_DATA_DIR", os.path.join(WORKSPACE_DIR, "shashank", "shashank_data", "testing_processed_ade_new"))
-#TEST_DATA_DIR   = "shashank_data/test_processed_data_pruned_shashank"
-OUTPUT_DIR      = os.environ.get("OUTPUT_DIR", os.path.join(WORKSPACE_DIR, "shashank", "shashank_models", "OUTPUT_model_pruned_mp_[1024]_mlp_[512]_noAdjLearning_BS32_epoch_500_shashank"))
-MODEL_DIR       = os.environ.get("MODEL_DIR", os.path.join(WORKSPACE_DIR, "shashank", "shashank_models", "model_pruned_mp_[1024]_mlp_[512]_noAdjLearning_BS32_epoch_500_shashank"))
-#MODEL_DIR       = "shashank_models/model_1024_512_noAdjLearning"  #1st experiment
+TEST_DATA_DIR   = os.environ.get("TEST_DATA_DIR", os.path.join(WORKSPACE_DIR, "new", "new_data", "testing_processed_ade"))
+#TEST_DATA_DIR   = "new_data/test_processed_data_pruned_new"
+OUTPUT_DIR      = os.environ.get("OUTPUT_DIR", os.path.join(WORKSPACE_DIR, "new", "new_models", "OUTPUT_model_pruned_mp_[1024]_mlp_[512]_noAdjLearning_BS32_epoch_500_new"))
+# MODEL_DIR       = os.environ.get("MODEL_DIR", os.path.join(WORKSPACE_DIR, "new", "new_models", "model_pruned_mp_[1024]_mlp_[512]_noAdjLearning_BS32_epoch_500_new"))
+MODEL_DIR       = "new_models/model_1024_1024_512_noAdjLearning"  #1st experiment
 MODEL_FILE      = os.environ.get("MODEL_FILE", os.path.join(MODEL_DIR, "best_model.pth"))
 BATCH_SIZE      = 32
 DEVICE          = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -38,7 +38,7 @@ MP_ACT          = 'ELU'
 MLP_ACT         = 'ReLU'
 IN_CHANNELS = 1024
 NUM_CLUSTERS = 2
-MP_UNITS = [1024] # a list
+MP_UNITS = [1024, 1024] # a list
 MLP_UNITS = [512]
 
 #MP_UNITS = [1024, 1024] # a list

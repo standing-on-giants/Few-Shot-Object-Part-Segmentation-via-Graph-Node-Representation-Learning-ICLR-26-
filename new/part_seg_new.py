@@ -764,7 +764,7 @@ def get_query_feature_and_affinity_matrix_before_pruning(support_image, support_
     # print(f"support_image_shape: {support_dict['original_image'].shape}, support_superpixels_shape: {support_dict['superpixel_overlayed'].shape}")
     # print(f"support_superpixel_labels_shape: {support_dict['superpixel_labels'].shape}, support_superpixel_features_shape: {support_dict['superpixel_features'].shape}")
 
-    # # from understanding_pruningCode_shashank import visualize_queryOrSupport
+    # # from understanding_pruningCode_new import visualize_queryOrSupport
     # visualize_queryOrSupport(query_dict, save_path="./visualizations/queryBeforeFn_vis.png")
     # visualize_queryOrSupport(support_dict, save_path="./visualizations/supportBeforeFn_vis.png")
 
@@ -1025,7 +1025,7 @@ def get_query_feature_and_affinity_matrix_after_pruning(support_image, support_p
     # print(f"support_image_shape: {support_dict['original_image'].shape}, support_superpixels_shape: {support_dict['superpixel_overlayed'].shape}")
     # print(f"support_superpixel_labels_shape: {support_dict['superpixel_labels'].shape}, support_superpixel_features_shape: {support_dict['superpixel_features'].shape}")
 
-    # # from understanding_pruningCode_shashank import visualize_queryOrSupport
+    # # from understanding_pruningCode_new import visualize_queryOrSupport
     # visualize_queryOrSupport(query_dict, save_path="./visualizations/queryBeforeFn_vis.png")
     # visualize_queryOrSupport(support_dict, save_path="./visualizations/supportBeforeFn_vis.png")
 

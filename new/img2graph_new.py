@@ -7,7 +7,7 @@ import torch.nn as nn
 from torch_geometric.data import Data
 #from torch_geometric.nn import gcn_norm
 from torch_geometric.nn.conv.gcn_conv import gcn_norm
-from part_seg_shashank import get_query_feature_and_affinity_matrix_after_pruning
+from part_seg_new import get_query_feature_and_affinity_matrix_after_pruning
 import numpy as np
 import os
 
@@ -23,10 +23,10 @@ with open(SUPPORT_DICT_PATH, 'rb') as f:
 
 
 from torch.utils.data import DataLoader
-from dataset_shashank import PartQueryDataset, custom_transform
+from dataset_new import PartQueryDataset, custom_transform
 
 # root directory pointing to training_data
-dataset_root = os.environ.get("DATASET_ROOT", os.path.join(WORKSPACE_DIR, "data", "testing_data_MOHAN"))
+dataset_root = os.environ.get("DATASET_ROOT", os.path.join(WORKSPACE_DIR, "data", "training_data_MOHAN"))
 
 # supp_dict is defined above
 
@@ -36,7 +36,7 @@ dataloader = DataLoader(dataset, batch_size=8, shuffle=False, num_workers=8)
 from torch_geometric.data import Data, Batch
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-processed_data_dir = os.environ.get("PROCESSED_DATA_DIR", os.path.join(WORKSPACE_DIR, "shashank", "shashank_data", "testing_processed_ade"))
+processed_data_dir = os.environ.get("PROCESSED_DATA_DIR", os.path.join(WORKSPACE_DIR, "new", "new_data", "training_processed_ade"))
 os.makedirs(processed_data_dir, exist_ok=True)
 
 idx = 0

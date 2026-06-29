@@ -3,8 +3,8 @@ import torch
 from torch.nn import CrossEntropyLoss
 from torch.utils.data import DataLoader
 from torch_geometric.loader import DataLoader as GeoDataLoader
-from model_shashank import Net, Net_second, DenseMinCutNet  # your model with forward(x, edge_index, edge_weight, batch)
-from graph_dataset_shashank import GraphPartDataset  # assume you saved graphs and use torch.load()
+from model_new import Net, Net_second, DenseMinCutNet  # your model with forward(x, edge_index, edge_weight, batch)
+from graph_dataset_new import GraphPartDataset  # assume you saved graphs and use torch.load()
 from tqdm import tqdm
 import torch.nn.functional as F
 
@@ -38,12 +38,12 @@ DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 WORKSPACE_DIR = os.environ.get("WORKSPACE_DIR", os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-MODEL_DIR = os.environ.get("MODEL_DIR", os.path.join(WORKSPACE_DIR, "shashank", "shashank_models", "model_1024_1024_512_noAdjLearning"))
+MODEL_DIR = os.environ.get("MODEL_DIR", os.path.join(WORKSPACE_DIR, "new", "new_models", "model_1024_1024_512_noAdjLearning"))
 os.makedirs(MODEL_DIR, exist_ok=True)
 
 
 # getting the graph training Dataset
-TRAIN_DATA_DIR = os.environ.get("TRAIN_DATA_DIR", os.path.join(WORKSPACE_DIR, "shashank", "shashank_data", "training_processed_ade"))
+TRAIN_DATA_DIR = os.environ.get("TRAIN_DATA_DIR", os.path.join(WORKSPACE_DIR, "new", "new_data", "training_processed_ade"))
 dataset = GraphPartDataset(TRAIN_DATA_DIR)  # load .pt files
 loader = GeoDataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True)
 
@@ -60,9 +60,9 @@ loader = GeoDataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True)
 #     mlp_act='ReLU'
 # ).to(DEVICE)
 
-#net.load_state_dict(torch.load("./shashank_models/model_pruned_mp_[1024]_mlp_[512]_noAdjLearning_BS32_epoch_500_shashank/best_model.pth"))
+#net.load_state_dict(torch.load("./new_models/model_pruned_mp_[1024]_mlp_[512]_noAdjLearning_BS32_epoch_500_new/best_model.pth"))
 
-# checkpoint = torch.load("./shashank_models/model_pruned_mp_[1024]_mlp_[512]_AdjLearning_BS32_epoch_500_shashank/best_model.pth")
+# checkpoint = torch.load("./new_models/model_pruned_mp_[1024]_mlp_[512]_AdjLearning_BS32_epoch_500_new/best_model.pth")
 # print("Model keys:")
 # for k in checkpoint.keys():
 #     print(k)

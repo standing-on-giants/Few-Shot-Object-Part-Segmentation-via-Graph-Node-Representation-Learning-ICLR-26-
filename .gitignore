@@ -14,19 +14,19 @@ runs/
 .vscode/
 .idea/
 data/
-shashank/__pycache__
-shashank/cos_dist_mat_visualization
-shashank/cos_dist_matrix_visualizations
-shashank/shashank_data
-shashank/shashank_models
-shashank/shashank_predictions
-shashank/shashank_predictions2
-shashank/visualizations
+new/__pycache__
+new/cos_dist_mat_visualization
+new/cos_dist_matrix_visualizations
+new/new_data
+new/new_models
+new/new_predictions
+new/new_predictions2
+new/visualizations
 
 # Ignore all files and folders at the root level
 /*
-# Do NOT ignore the shashank directory
-!/shashank/
+# Do NOT ignore the new directory
+!/new/
 !/data/
 !/evaluator/
 
